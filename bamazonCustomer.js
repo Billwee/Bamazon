@@ -16,7 +16,7 @@ connection.connect(function(err) {
   if (err) throw err;
   console.log('connected as id ' + connection.threadId + '\n');
   showProducts();
-  end();
+  order();
 });
 
 //END
@@ -27,8 +27,8 @@ function end() {
 
 //BUY PRODUCTS
 function showProducts() {
-  console.log(`\nHere's what we have for sale today!\n`);
   connection.query('SELECT * FROM products', function(err, res) {
+    console.log(`\nHere's what we have for sale today!\n`);
     if (err) throw err;
     data = [];
     let obj = {};
@@ -46,30 +46,36 @@ function showProducts() {
 
 //ORDER PRODUCTS
 function order() {
-  inquirer
-    .prompt([
-      {
-        name: 'buy',
-        message:
-          "Please enter the Item ID of the item you want ot purchase\n Type 'End' to not buy anything\n\n",
-        validate: function(input) {
-          if (input.toLowerCase() === 'end') {
-            return true;
+  connection.query('SELECT item_id FROM products', function(err, res) {
+    if (err) throw err;
+    // console.log(res);
+    inquirer
+      .prompt([
+        {
+          name: 'buy',
+          message:
+            "Please enter the Item ID of the item you want ot purchase\n Type 'End' to not buy anything\n\n",
+          validate: function(input) {
+            let match = false;
+            if (input.toLowerCase() === 'end') {
+              return true;
+            }
+            res.forEach(element => {
+              if (input === element.item_id) {
+                match = true;
+              }
+            });
+            return match;
           }
-
-          connection.query('SELECT item_id FROM products', function(err, res) {
-            if (err) throw err;
-            console.log(res);
-          });
         }
-      }
-    ])
-    .then(answers => {
-      if (answers.buy.toLowerCase() === 'end') {
-        return end();
-      }
-      end();
-    });
+      ])
+      .then(answers => {
+        if (answers.buy.toLowerCase() === 'end') {
+          return end();
+        }
+        end();
+      });
+  });
 
   //   {
   //     type: 'number',
