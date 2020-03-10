@@ -43,3 +43,52 @@ function showProducts() {
     console.table(data);
   });
 }
+
+//ORDER PRODUCTS
+function order() {
+  inquirer
+    .prompt([
+      {
+        name: 'buy',
+        message:
+          "Please enter the Item ID of the item you want ot purchase\n Type 'End' to not buy anything\n\n",
+        validate: function(input) {
+          if (input.toLowerCase() === 'end') {
+            return true;
+          }
+
+          connection.query('SELECT item_id FROM products', function(err, res) {
+            if (err) throw err;
+            console.log(res);
+          });
+        }
+      }
+    ])
+    .then(answers => {
+      if (answers.buy.toLowerCase() === 'end') {
+        return end();
+      }
+      end();
+    });
+
+  //   {
+  //     type: 'number',
+  //     name: 'quantity',
+  //     message: 'How many would you like to buy?'
+  //   }
+  // ])
+  // .then(answers => {
+  //   if answers
+  //   connection.query('SELECT * FROM products', function(err, res) {
+  //     if (err) throw err;
+
+  //     res.forEach((element, idx) => {
+  //       element.item_id;
+  //       obj['Product Name'] = element.product_name;
+  //       obj['Price'] = element.price;
+  //       data.push(obj);
+  //     });
+  //     console.table(data);
+  // });
+  // });
+}
