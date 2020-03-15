@@ -48,7 +48,13 @@ function menu() {
           showProducts();
           break;
         case '2':
-        //do something
+          lowInventory();
+          break;
+        case '3':
+          //add inventory
+          break;
+        case '4':
+        //add new product
       }
     });
 }
@@ -88,5 +94,27 @@ function showProducts() {
           end();
         }
       });
+  });
+}
+
+function lowInventory() {
+  connection.query('SELECT * FROM products WHERE stock_quantity < 6', function(
+    err,
+    res
+  ) {
+    var table = new Table({
+      head: ['Item ID', 'Product Name', 'Price', 'Stock Quantity']
+    });
+    res.forEach(element => {
+      table.push([
+        element.item_id,
+        element.product_name,
+        element.price,
+        element.stock_quantity
+      ]);
+    });
+
+    console.log(table.toString());
+    end();
   });
 }
