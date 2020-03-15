@@ -2,6 +2,8 @@ var mysql = require('mysql');
 var inquirer = require('inquirer');
 var Table = require('cli-table');
 
+process.setMaxListeners(50);
+
 var connection = mysql.createConnection({
   host: 'localhost',
 
@@ -25,6 +27,25 @@ function end() {
   connection.end();
 }
 
+function returnQuestion() {
+  inquirer
+    .prompt([
+      {
+        name: 'confirm',
+        type: 'confirm',
+        message: '\nWould you like to return to the main menu?',
+        default: true
+      }
+    ])
+    .then(answer => {
+      if (answer.confirm) {
+        menu();
+      } else {
+        end();
+      }
+    });
+}
+
 function menu() {
   inquirer
     .prompt([
@@ -42,7 +63,6 @@ function menu() {
     ])
     .then(answers => {
       let x = answers.selection.charAt(0);
-      console.log(x);
       switch (x) {
         case '1':
           showProducts();
@@ -51,7 +71,7 @@ function menu() {
           lowInventory();
           break;
         case '3':
-          //add inventory
+          addInventory();
           break;
         case '4':
         //add new product
@@ -60,61 +80,100 @@ function menu() {
 }
 
 function showProducts() {
-  connection.query('SELECT * FROM products', function(err, res) {
-    console.log(`\nViewing products for sale.\n`);
-    if (err) throw err;
+  connection
+    .query('SELECT * FROM products', function(err, res) {
+      console.log(`\nViewing products for sale.\n`);
+      if (err) throw err;
 
-    var table = new Table({
-      head: ['Item ID', 'Product Name', 'Price', 'Stock Quantity']
-    });
-    res.forEach(element => {
-      table.push([
-        element.item_id,
-        element.product_name,
-        element.price,
-        element.stock_quantity
-      ]);
-    });
-
-    console.log(table.toString());
-
-    inquirer
-      .prompt([
-        {
-          name: 'confirm',
-          type: 'confirm',
-          message: '\nWould you like to return to the main menu?',
-          default: true
-        }
-      ])
-      .then(answer => {
-        if (answer.confirm) {
-          menu();
-        } else {
-          end();
-        }
+      var table = new Table({
+        head: ['Item ID', 'Product Name', 'Price', 'Stock Quantity']
       });
-  });
+      res.forEach(element => {
+        table.push([
+          element.item_id,
+          element.product_name,
+          element.price,
+          element.stock_quantity
+        ]);
+      });
+
+      console.log(table.toString());
+    })
+    .on('end', function() {
+      returnQuestion();
+    });
 }
 
 function lowInventory() {
-  connection.query('SELECT * FROM products WHERE stock_quantity < 6', function(
-    err,
-    res
-  ) {
-    var table = new Table({
-      head: ['Item ID', 'Product Name', 'Price', 'Stock Quantity']
-    });
-    res.forEach(element => {
-      table.push([
-        element.item_id,
-        element.product_name,
-        element.price,
-        element.stock_quantity
-      ]);
-    });
+  connection
+    .query('SELECT * FROM products WHERE stock_quantity < 6', function(
+      err,
+      res
+    ) {
+      var table = new Table({
+        head: ['Item ID', 'Product Name', 'Price', 'Stock Quantity']
+      });
+      res.forEach(element => {
+        table.push([
+          element.item_id,
+          element.product_name,
+          element.price,
+          element.stock_quantity
+        ]);
+      });
 
-    console.log(table.toString());
-    end();
+      console.log(table.toString());
+    })
+    .on('end', function() {
+      returnQuestion();
+    });
+}
+
+function addInventory() {
+  let newTotal;
+  connection.query('SELECT * FROM products', function(err, res) {
+    inquirer
+      .prompt([
+        {
+          name: 'selection',
+          message: 'Enter Item ID of product',
+          validate: function(input) {
+            let match = false;
+            if (input.toLowerCase() === 'end') {
+              return true;
+            }
+            res.forEach(element => {
+              if (input === element.item_id) {
+                match = true;
+              }
+            });
+            return match;
+          }
+        },
+        {
+          name: 'quantity',
+          type: 'number',
+          message: 'How many would you like to add?'
+        }
+      ])
+      .then(answer => {
+        connection
+          .query(
+            `SELECT * FROM products WHERE item_id = ${answer.selection}`,
+            function(err, res) {
+              newTotal = res[0].stock_quantity + answer.quantity;
+              connection.query(
+                `UPDATE products SET stock_quantity = ${newTotal} WHERE item_id = ${answer.selection}`,
+                function(err, res) {}
+              );
+            }
+          )
+          .on('end', function() {
+            console.log(
+              `\nStock quantity of item #${answer.selection} is now ${newTotal}\n`
+            );
+            returnQuestion();
+          });
+      });
   });
 }
