@@ -1,5 +1,6 @@
 var mysql = require('mysql');
 var inquirer = require('inquirer');
+var Table = require('cli-table');
 
 var connection = mysql.createConnection({
   host: 'localhost',
@@ -30,23 +31,35 @@ function showProducts() {
   connection.query('SELECT * FROM products', function(err, res) {
     console.log(`\nHere's what we have for sale today!\n`);
     if (err) throw err;
-    data = [];
-    let obj = {};
 
-    res.forEach((element, idx) => {
-      obj = {};
-      obj['Item ID'] = element.item_id;
-      obj['Product Name'] = element.product_name;
-      obj['Price'] = element.price;
-      data.push(obj);
+    // instantiate
+    var table = new Table({
+      head: ['Item ID', 'Product Name', 'Price']
     });
-    console.table(data);
+    res.forEach(element => {
+      table.push([element.item_id, element.product_name, element.price]);
+    });
+
+    console.log(table.toString());
+
+    // data = [];
+    // let obj = {};
+
+    // res.forEach((element, idx) => {
+    //   obj = {};
+    //   obj['Item ID'] = element.item_id;
+    //   obj['Product Name'] = element.product_name;
+    //   obj['Price'] = element.price;
+    //   data.push(obj);
+    // });
+    // console.table(data);
   });
 }
 
 //ORDER PRODUCTS
 function order() {
   connection.query('SELECT item_id FROM products', function(err, res) {
+    var item;
     if (err) throw err;
     // console.log(res);
     inquirer
@@ -73,15 +86,47 @@ function order() {
         if (answers.buy.toLowerCase() === 'end') {
           return end();
         }
-        end();
+        item = answers.buy;
+        inquirer
+          .prompt([
+            {
+              type: 'number',
+              name: 'quantity',
+              message: 'How many would you like to buy?'
+            }
+          ])
+          .then(answers2 => {
+            connection.query(
+              `SELECT * FROM products WHERE item_id = ${item}`,
+              function(err, res) {
+                if (answers2.quantity > res[0].stock_quantity) {
+                  console.log(
+                    8391`\nSorry, There are only ${res[0].stock_quantity} of those left. Please try again`
+                  );
+                  setTimeout(function() {
+                    return showProducts(), order();
+                  }, 3000);
+                } else {
+                  let newTotal = res[0].stock_quantity - answers2.quantity;
+                  connection.query(
+                    `UPDATE products SET stock_quantity = ${newTotal} WHERE item_id = ${item}`,
+                    function(err, res) {}
+                  );
+                  console.log(
+                    `\nThank you for your purchase
+                      \nYou spent $${res[0].price * answers2.quantity}
+                      \nReturning to storefront in 5 seconds`
+                  );
+                  setTimeout(function() {
+                    return showProducts(), order();
+                  }, 5000);
+                }
+              }
+            );
+          });
       });
   });
 
-  //   {
-  //     type: 'number',
-  //     name: 'quantity',
-  //     message: 'How many would you like to buy?'
-  //   }
   // ])
   // .then(answers => {
   //   if answers
