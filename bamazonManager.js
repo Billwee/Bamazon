@@ -15,18 +15,20 @@ var connection = mysql.createConnection({
   database: 'bamazon'
 });
 
+// On connection a function loads the main menu
 connection.connect(function(err) {
   if (err) throw err;
   console.log('connected as id ' + connection.threadId + '\n');
   menu();
 });
 
-//END
+// Function that closes the connection
 function end() {
   console.log('\nLOGGING OUT AS MANAGER\n');
   connection.end();
 }
 
+// Function that askes the user if they'd like to return to the main menu
 function returnQuestion() {
   inquirer
     .prompt([
@@ -46,6 +48,9 @@ function returnQuestion() {
     });
 }
 
+// A function that loads an inquirer prompt which asked the user what
+// they'd like to do. Once selected a switch statement loads the
+// appropiate function.
 function menu() {
   inquirer
     .prompt([
@@ -79,6 +84,7 @@ function menu() {
     });
 }
 
+// Queries the database and loads the contents into a readable table
 function showProducts() {
   connection
     .query('SELECT * FROM products', function(err, res) {
@@ -104,6 +110,8 @@ function showProducts() {
     });
 }
 
+// Queries the database and loads items which have a stock_quantity lower than
+// five into a table and displays it
 function lowInventory() {
   connection
     .query('SELECT * FROM products WHERE stock_quantity < 6', function(
@@ -129,6 +137,8 @@ function lowInventory() {
     });
 }
 
+// Uses inquirer to add inventory to the items in the database. Will only accept
+// item numbers that already exist.
 function addInventory() {
   let newTotal;
   connection.query('SELECT * FROM products', function(err, res) {
@@ -178,6 +188,8 @@ function addInventory() {
   });
 }
 
+// Uses inquirer to take user input and load it into the database to create a
+// new product.
 function addProduct() {
   inquirer
     .prompt([
