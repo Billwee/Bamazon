@@ -32,7 +32,6 @@ function showProducts() {
     console.log(`\nHere's what we have for sale today!\n`);
     if (err) throw err;
 
-    // instantiate
     var table = new Table({
       head: ['Item ID', 'Product Name', 'Price']
     });
@@ -41,18 +40,6 @@ function showProducts() {
     });
 
     console.log(table.toString());
-
-    // data = [];
-    // let obj = {};
-
-    // res.forEach((element, idx) => {
-    //   obj = {};
-    //   obj['Item ID'] = element.item_id;
-    //   obj['Product Name'] = element.product_name;
-    //   obj['Price'] = element.price;
-    //   data.push(obj);
-    // });
-    // console.table(data);
   });
 }
 
@@ -101,7 +88,7 @@ function order() {
               function(err, res) {
                 if (answers2.quantity > res[0].stock_quantity) {
                   console.log(
-                    8391`\nSorry, There are only ${res[0].stock_quantity} of those left. Please try again`
+                    `\nSorry, There are only ${res[0].stock_quantity} of those left. Please try again`
                   );
                   setTimeout(function() {
                     return showProducts(), order();
@@ -126,20 +113,4 @@ function order() {
           });
       });
   });
-
-  // ])
-  // .then(answers => {
-  //   if answers
-  //   connection.query('SELECT * FROM products', function(err, res) {
-  //     if (err) throw err;
-
-  //     res.forEach((element, idx) => {
-  //       element.item_id;
-  //       obj['Product Name'] = element.product_name;
-  //       obj['Price'] = element.price;
-  //       data.push(obj);
-  //     });
-  //     console.table(data);
-  // });
-  // });
 }

@@ -74,7 +74,7 @@ function menu() {
           addInventory();
           break;
         case '4':
-        //add new product
+          addProduct();
       }
     });
 }
@@ -176,4 +176,49 @@ function addInventory() {
           });
       });
   });
+}
+
+function addProduct() {
+  inquirer
+    .prompt([
+      {
+        type: 'number',
+        name: 'item_id',
+        message: 'Enter new product Item ID number'
+      },
+      {
+        name: 'product_name',
+        message: 'Enter the new product name'
+      },
+      {
+        name: 'department_name',
+        message: 'Enter the department of new product '
+      },
+      {
+        name: 'price',
+        type: 'number',
+        message: 'Enter the new product price'
+      },
+      {
+        name: 'stock_quantity',
+        type: 'number',
+        message: 'Enter the stock quantity of new product'
+      }
+    ])
+    .then(answer => {
+      connection.query(
+        'INSERT INTO products SET ?',
+        {
+          item_id: parseInt(answer.item_id),
+          product_name: answer.product_name,
+          department_name: answer.department_name,
+          price: parseInt(answer.price),
+          stock_quantity: parseInt(answer.stock_quantity)
+        },
+        function(err, res) {
+          if (err) throw err;
+          showProducts();
+        }
+      );
+    });
 }
