@@ -38,6 +38,6 @@ I've created a storefront that is accessed separately by Customers and Managemen
   3.  Uses inquirer to take user input and adds inventory to the items in the database. The app will only accept item numbers that exist in the database.
   4.  Uses inquirer to take user input and load it into the database to create a new product.
 
-  ## Video Demonstration
+## Video Demonstration
 
-  You can watch an overview of the application by [Clicking Here](https://drive.google.com/file/d/1dm2BeRJXAfVoIIFvlknwkwlhSe0siIt0/view)
+You can watch an overview of the application by [Clicking Here](https://drive.google.com/file/d/1dm2BeRJXAfVoIIFvlknwkwlhSe0siIt0/view)
